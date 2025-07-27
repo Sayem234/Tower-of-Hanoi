@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tower of Hanoi - Dynamic Input</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base styles for responsiveness */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter font */
+        }
+        #container {
+            width: 90vw; /* Use viewport width */
+            max-width: 800px; /* Max width to prevent it from getting too large */
+            height: 50vh; /* Use viewport height */
+            min-height: 250px; /* Minimum height to prevent collapse */
+            max-height: 400px; /* Max height */
+            display: flex; /* Use flexbox for peg distribution */
+            justify-content: space-around; /* Distribute space evenly */
+            align-items: flex-end; /* Align pegs to the bottom */
+            position: relative; /* Crucial for absolute disk positioning */
+            margin-top: 2rem; /* Add some space from input */
+        }
+        .tower-column {
+            width: 30%; /* Each tower takes roughly 30% of the container width */
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end; /* Peg content aligns to the bottom */
+            position: relative; /* For peg-rod, peg-base, and tower-name positioning */
+        }
+        .peg-base {
+            width: 100%;
+            height: 10px; /* Small base for visual separation */
+            background-color: #555;
+            border-radius: 4px;
+            position: absolute;
+            bottom: 0;
+        }
+        .peg-rod {
+            width: 8px; /* Visual rod */
+            height: calc(100% - 30px); /* Height of the rod, adjust as needed */
+            background-color: #888;
+            border-radius: 4px;
+            position: absolute;
+            bottom: 10px; /* Above the base */
+        }
+        /* Style for the tower names */
+        .tower-name {
+            position: absolute; /* Position absolutely within its .tower-column parent */
+            bottom: -30px; /* Adjust this value to control spacing below the base */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Adjust for its own width */
+            white-space: nowrap; /* Prevent text from wrapping */
+            text-align: center; /* Ensure text is centered within its own box */
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600; /* font-semibold */
+        }
+        .disk {
+            /* Transition for left and bottom properties */
+            transition: left 0.8s ease-in-out, bottom 0.8s ease-in-out;
+            position: absolute; /* Absolute positioning relative to #container */
+            height: 24px; /* Fixed height for disks */
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 700; /* font-bold */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 10; /* Ensure disks are above pegs */
+        }
+
+        /* Tailwind overrides for button styling */
+        button {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            border-radius: 0.5rem;
+            background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+            --tw-gradient-from: #3b82f6; /* blue-600 */
+            --tw-gradient-to: #2563eb; /* blue-700 */
+        }
+        button:hover {
+            --tw-gradient-from: #2563eb; /* blue-700 */
+            --tw-gradient-to: #1d4ed8; /* blue-800 */
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center pt-10">
+
+    <!-- Title -->
+    <h1 class="text-3xl font-bold mb-4">🧠 Tower of Hanoi</h1>
+
+    <!-- User input and controls -->
+    <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center">
+        <label for="diskCount" class="text-lg font-semibold">Enter number of Disks:</label>
+        <input type="number" id="diskCount" min="1" max="10" value="5"
+               class="w-20 px-2 py-1 text-black rounded shadow" />
+        <button id="startBtn" class="bg-blue-600 px-4 py-2 rounded font-semibold hover:bg-blue-700 transition">
+            Start
+        </button>
+        <button id="pauseBtn" class="bg-yellow-600 px-4 py-2 rounded font-semibold hover:bg-yellow-700 transition">
+            Pause
+        </button>
+        <button id="restartBtn" class="bg-red-600 px-4 py-2 rounded font-semibold hover:bg-red-700 transition">
+            Restart
+        </button>
+    </div>
+
+    <!-- Tower container -->
+    <div id="container">
+        <!-- Tower A -->
+        <div class="tower-column">
+            <div class="peg-rod"></div>
+            <div class="peg-base"></div>
+            <div class="tower-name">Tower A</div>
+        </div>
+
+        <!-- Tower B -->
+        <div class="tower-column">
+            <div class="peg-rod"></div>
+            <div class="peg-base"></div>
+            <div class="tower-name">Tower B</div>
+        </div>
+
+        <!-- Tower C -->
+        <div class="tower-column">
+            <div class="peg-rod"></div>
+            <div class="peg-base"></div>
+            <div class="tower-name">Tower C</div>
+        </div>
+        <!-- Disks will be appended here directly by JavaScript -->
+    </div>
+
+    <script>
+        let pegs = [[], [], []];
+        const container = document.getElementById('container');
+        const diskHeight = 24; // Fixed height of disks
+        const pegBaseHeight = 10; // Height of the .peg-base
+        const animationDelay = 1200; // Milliseconds for disk movement animation
+
+        // Control flags for animation state
+        let isPaused = false;
+        let pausePromiseResolve = null; // To resolve the promise when resuming
+        let stopAnimation = false; // Flag to stop the recursive hanoi calls
+
+        // Function to clear all disks from the DOM and reset peg arrays
+        function clearPegs() {
+            pegs = [[], [], []];
+            // Remove all elements with the 'disk' class from the container
+            container.querySelectorAll('.disk').forEach(d => d.remove());
+        }
+
+        // Function to create disks and add them to the first peg
+        function createDisks(num) {
+            // Define a set of colors for the disks
+            const colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'purple', 'pink', 'teal', 'cyan'];
+
+            for (let i = num; i >= 1; i--) {
+                const disk = document.createElement('div');
+                // Assign a background color based on the disk size (using Tailwind classes)
+                disk.className = `disk bg-${colors[i-1]}-600`;
+                // Set disk width, larger disks are wider
+                disk.style.width = `${40 + i * 15}px`;
+                disk.dataset.size = i; // Store disk size in a data attribute
+                disk.innerText = `Disk ${i}`; // Display disk number
+                container.appendChild(disk); // Append disk directly to the main container
+                pegs[0].push(disk); // Add disk to the first peg's array
+            }
+        }
+
+        // Function to calculate and set the position (left and bottom) of all disks
+        function positionDisks() {
+            // Get the bounding rectangle of the main container for relative positioning
+            const containerRect = container.getBoundingClientRect();
+            // Store the horizontal center position of each peg
+            const pegCenters = [];
+
+            // Calculate the center X coordinate for each tower column relative to the container
+            for (let i = 0; i < 3; i++) {
+                const pegColumn = document.querySelector(`.tower-column:nth-child(${i + 1})`);
+                const pegColumnRect = pegColumn.getBoundingClientRect();
+                // Center of the peg column relative to the container's left edge
+                pegCenters[i] = (pegColumnRect.left - containerRect.left) + (pegColumnRect.width / 2);
+            }
+
+            // Iterate through each peg and its disks to set their positions
+            for (let i = 0; i < 3; i++) {
+                pegs[i].forEach((disk, index) => {
+                    const diskWidth = disk.offsetWidth; // Get the actual rendered width of the disk
+                    // Calculate the left position to center the disk on the peg's center
+                    disk.style.left = `${pegCenters[i] - (diskWidth / 2)}px`;
+                    // Calculate the bottom position to stack disks correctly above the peg base
+                    disk.style.bottom = `${pegBaseHeight + index * diskHeight}px`;
+                });
+            }
+        }
+
+        // Utility function for pausing execution and handling stop signal
+        function sleep(ms) {
+            return new Promise(async resolve => {
+                // If animation is stopped, resolve immediately
+                if (stopAnimation) {
+                    resolve();
+                    return;
+                }
+
+                // While paused, wait for resume
+                while (isPaused) {
+                    await new Promise(res => { pausePromiseResolve = res; });
+                    pausePromiseResolve = null; // Clear resolver after resuming
+                    // Check stopAnimation again after resuming, in case restart was pressed while paused
+                    if (stopAnimation) {
+                        resolve();
+                        return;
+                    }
+                }
+                setTimeout(resolve, ms);
+            });
+        }
+
+        // Async function to simulate moving a disk from one peg to another
+        async function moveDisk(from, to) {
+            if (stopAnimation) return; // Exit if stop is requested
+            const disk = pegs[from].pop(); // Remove the top disk from the source peg array
+            pegs[to].push(disk); // Add the disk to the destination peg array
+
+            // Update positions for all disks. This triggers the CSS transition.
+            positionDisks();
+            await sleep(animationDelay); // Wait for the animation to complete
+        }
+
+        // Recursive function to solve the Tower of Hanoi puzzle
+        async function hanoi(n, from, to, aux) {
+            if (n === 0 || stopAnimation) return; // Base case: no disks to move or stop requested
+
+            await hanoi(n - 1, from, aux, to); // Move n-1 disks from source to auxiliary
+            if (stopAnimation) return; // Check after recursive call
+
+            await moveDisk(from, to); // Move the nth disk from source to destination
+            if (stopAnimation) return; // Check after move
+
+            await hanoi(n - 1, aux, to, from); // Move n-1 disks from auxiliary to destination
+        }
+
+        // Event listener for the "Start" button
+        document.getElementById('startBtn').addEventListener('click', async () => {
+            const num = parseInt(document.getElementById('diskCount').value);
+            // Validate input for number of disks
+            if (isNaN(num) || num < 1 || num > 10) {
+                // Display a custom message box instead of alert
+                const messageBox = document.createElement('div');
+                messageBox.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-600 text-white p-4 rounded-lg shadow-lg z-50';
+                messageBox.innerText = 'Please enter a valid number between 1 and 10';
+                document.body.appendChild(messageBox);
+                setTimeout(() => messageBox.remove(), 3000); // Remove message after 3 seconds
+                return;
+            }
+
+            // Disable the start button during the animation to prevent re-triggering
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = false; // Enable pause button
+            document.getElementById('restartBtn').disabled = false; // Enable restart button
+            document.getElementById('pauseBtn').innerText = 'Pause'; // Reset pause button text
+
+            stopAnimation = false; // Ensure animation is not stopped from a previous run
+            isPaused = false; // Ensure not paused
+
+            clearPegs(); // Clear existing disks
+            createDisks(num); // Create new disks based on user input
+            positionDisks(); // Initial positioning of the disks
+
+            await sleep(1000); // Give a short delay for initial rendering before starting the puzzle
+            await hanoi(num, 0, 2, 1); // Solve the puzzle: move disks from peg 0 to peg 2 using peg 1 as auxiliary
+
+            // Re-enable the start button and disable control buttons after the puzzle is solved
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('restartBtn').disabled = true;
+        });
+
+        // Event listener for the "Pause" button
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (isPaused) {
+                isPaused = false;
+                if (pausePromiseResolve) {
+                    pausePromiseResolve(); // Resolve the promise that sleep is waiting on
+                }
+                pauseBtn.innerText = 'Pause';
+            } else {
+                isPaused = true;
+                pauseBtn.innerText = 'Resume';
+            }
+        });
+
+        // Event listener for the "Restart" button
+        document.getElementById('restartBtn').addEventListener('click', async () => {
+            stopAnimation = true; // Signal to stop the current animation
+            isPaused = false; // Ensure it's not paused
+            if (pausePromiseResolve) { // If currently waiting on a pause promise, resolve it
+                pausePromiseResolve();
+                pausePromiseResolve = null;
+            }
+
+            // Give a small delay to allow the current sleep/moveDisk to finish its current step
+            // and for the hanoi recursion to unwind due to stopAnimation flag.
+            await new Promise(resolve => setTimeout(resolve, 50)); // Short delay
+
+            clearPegs();
+            const num = parseInt(document.getElementById('diskCount').value);
+            createDisks(num);
+            positionDisks();
+
+            // Reset button states
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('restartBtn').disabled = true;
+            document.getElementById('pauseBtn').innerText = 'Pause';
+
+            stopAnimation = false; // Reset flag for the next run
+        });
+
+
+        // Add a resize event listener to re-position disks if the window changes size
+        window.addEventListener('resize', positionDisks);
+
+        // Initial setup when the window loads
+        window.onload = () => {
+            // Create initial disks based on the default input value
+            createDisks(parseInt(document.getElementById('diskCount').value));
+            positionDisks(); // Position them correctly
+
+            // Initially disable pause and restart buttons
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('restartBtn').disabled = true;
+        };
+    </script>
+
+</body>
+</html>
