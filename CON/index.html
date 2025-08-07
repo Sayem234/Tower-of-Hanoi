@@ -129,6 +129,94 @@
             margin-bottom: 20px;
         }
 
+        .output-section {
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            /* Added margin-bottom to create space before the filename input */
+            margin-bottom: 20px;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .output-header h3 {
+            color: #fff;
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .copy-btn {
+            background: linear-gradient(45deg, #2196f3, #21cbf3);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(45deg, #4caf50, #45a049);
+        }
+
+        .output-box {
+            width: 100%;
+            min-height: 150px;
+            max-height: 300px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+            backdrop-filter: blur(5px);
+            resize: vertical;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+
+        .output-box::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .output-box::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .output-box::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .output-box::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .output-stats {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
         .file-input-wrapper {
             position: relative;
             display: inline-block;
@@ -156,6 +244,15 @@
             background: rgba(255, 255, 255, 0.3);
             border-color: rgba(255, 255, 255, 0.8);
             transform: translateY(-2px);
+        }
+
+        .file-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            color: #fff;
+            font-size: 14px;
         }
 
         .filename-input {
@@ -272,7 +369,7 @@
         <div class="banner">
             <h1>FORMAT CHANGER</h1>
             <div class="divider"></div>
-            <p>Developer: MD. SAYEM</p>
+            <p>Developer: MD.SAYEM</p>
         </div>
 
         <div class="input-section">
@@ -296,27 +393,43 @@
             </div>
 
             <div id="textMethod" class="input-method" style="display: none;">
-                <textarea id="rawTextInput" class="raw-text-input" placeholder="Oi mama ekhane copy paste kor...&#10;Example:&#10;uid|password|cookies"></textarea>
+                <textarea id="rawTextInput" class="raw-text-input" placeholder="Oi mama ekhane copy paste kor...&#10;Example: uid|password|cookies"></textarea>
                 <div class="text-info">
                     <span id="lineCount">0 lines</span> | <span id="charCount">0 characters</span>
                 </div>
             </div>
+            
+            <!-- NEW LOCATION for the output section to show a live preview -->
+            <div id="outputSection" class="output-section" style="display: none;">
+                <div class="output-header">
+                    <h3>Live Preview</h3>
+                    <button id="copyBtn" class="copy-btn" onclick="copyOutput()">
+                        📋 Copy Preview
+                    </button>
+                </div>
+                <textarea id="outputBox" class="output-box" readonly></textarea>
+                <div class="output-stats">
+                    <span id="outputStats">0 lines converted</span>
+                </div>
+            </div>
 
+            <!-- Filename input and the new "Download File" button are now after the preview -->
             <input type="text" id="outputName" class="filename-input" placeholder="Enter output filename (e.g., result.txt)" value="result.txt">
-
-            <button id="convertBtn" class="convert-btn" onclick="convertData()" disabled>
-                Convert Data
+            
+            <button id="downloadBtn" class="convert-btn" onclick="downloadFile()" disabled>
+                ⬇️ Download File
             </button>
         </div>
 
         <div id="status" class="status" style="display: none;"></div>
+
     </div>
 
     <script>
         let selectedFile = null;
         let convertedContent = null;
         let currentMethod = 'file'; // 'file' or 'text'
-
+        
         // Method switching functions
         function switchToFileMethod() {
             currentMethod = 'file';
@@ -324,7 +437,8 @@
             document.getElementById('textMethodBtn').classList.remove('active');
             document.getElementById('fileMethod').style.display = 'block';
             document.getElementById('textMethod').style.display = 'none';
-            updateConvertButton();
+            document.getElementById('outputSection').style.display = 'none'; // Hide preview when switching
+            updateDownloadButton();
             hideStatus();
         }
 
@@ -334,23 +448,18 @@
             document.getElementById('fileMethodBtn').classList.remove('active');
             document.getElementById('textMethod').style.display = 'block';
             document.getElementById('fileMethod').style.display = 'none';
-            updateConvertButton();
+            document.getElementById('outputSection').style.display = 'none'; // Hide preview when switching
+            updateDownloadButton();
             hideStatus();
         }
 
-        function updateConvertButton() {
-            const convertBtn = document.getElementById('convertBtn');
-            if (currentMethod === 'file') {
-                convertBtn.disabled = !selectedFile;
-                convertBtn.textContent = 'Convert File';
-            } else {
-                const textInput = document.getElementById('rawTextInput').value.trim();
-                convertBtn.disabled = !textInput;
-                convertBtn.textContent = 'Convert Data';
-            }
+        // Updated function to check if content is available to download
+        function updateDownloadButton() {
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.disabled = !convertedContent;
         }
 
-        // File input change handler
+        // File input change handler - triggers a preview update
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -360,24 +469,32 @@
                     <strong>Selected:</strong> ${file.name}<br>
                     <strong>Size:</strong> ${(file.size / 1024).toFixed(2)} KB
                 `;
-                updateConvertButton();
-                hideStatus();
+                updatePreviewFromFile();
+            } else {
+                selectedFile = null;
+                document.getElementById('fileInfo').style.display = 'none';
+                convertedContent = null;
+                document.getElementById('outputSection').style.display = 'none';
+                updateDownloadButton();
             }
+            hideStatus();
         });
 
-        // Text input change handler
+        // Text input change handler - triggers a live preview update
         document.getElementById('rawTextInput').addEventListener('input', function(e) {
             const text = e.target.value;
             const lines = text.split('\n').filter(line => line.trim().length > 0);
             document.getElementById('lineCount').textContent = `${lines.length} lines`;
             document.getElementById('charCount').textContent = `${text.length} characters`;
-            updateConvertButton();
+            
+            // Trigger live preview
+            updatePreviewFromText();
             hideStatus();
         });
 
         function showStatus(message, type) {
             const statusDiv = document.getElementById('status');
-            statusDiv.innerHTML = message; // Changed to innerHTML to support HTML content
+            statusDiv.innerHTML = message;
             statusDiv.className = `status ${type}`;
             statusDiv.style.display = 'block';
         }
@@ -399,156 +516,100 @@
                     }
                 }
             }
-
             return outputLines;
         }
 
-        function createDownloadLink(content, filename) {
-            const downloadBtn = document.createElement('a');
+        function showOutput(content, lineCount) {
+            document.getElementById('outputBox').value = content;
+            document.getElementById('outputStats').textContent = `${lineCount} lines converted`;
+            document.getElementById('outputSection').style.display = 'block';
             
-            try {
-                // Create blob with explicit UTF-8 encoding
-                const blob = new Blob([content], { 
-                    type: 'text/plain;charset=utf-8' 
+            // Scroll to output section
+            setTimeout(() => {
+                document.getElementById('outputSection').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
                 });
-                
-                // Create object URL
-                const url = URL.createObjectURL(blob);
-                
-                downloadBtn.href = url;
-                downloadBtn.download = filename;
-                downloadBtn.className = 'download-btn';
-                downloadBtn.textContent = '⬇️ Download Converted File';
-                
-                // Clean up URL after download
-                downloadBtn.onclick = function() {
-                    setTimeout(() => {
-                        try {
-                            URL.revokeObjectURL(url);
-                        } catch (e) {
-                            console.log('URL cleanup completed');
-                        }
-                    }, 1000);
-                };
-                
-            } catch (error) {
-                console.error('Download creation error:', error);
-                // Fallback method
-                downloadBtn.onclick = function() {
-                    downloadFallback(content, filename);
-                };
-                downloadBtn.className = 'download-btn';
-                downloadBtn.textContent = '⬇️ Download Converted File';
-                downloadBtn.href = '#';
-            }
+            }, 100);
+        }
+
+        function copyOutput() {
+            const outputBox = document.getElementById('outputBox');
+            const copyBtn = document.getElementById('copyBtn');
             
-            return downloadBtn;
-        }
-
-        function downloadFallback(content, filename) {
             try {
-                // Alternative download method
-                const element = document.createElement('a');
-                const file = new Blob([content], {type: 'text/plain'});
-                element.href = URL.createObjectURL(file);
-                element.download = filename;
-                element.style.display = 'none';
-                document.body.appendChild(element);
-                element.click();
-                document.body.removeChild(element);
+                outputBox.select();
+                document.execCommand('copy');
                 
-                // Clean up
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.classList.add('copied');
+                
                 setTimeout(() => {
-                    URL.revokeObjectURL(element.href);
-                }, 1000);
+                    copyBtn.textContent = originalText;
+                    copyBtn.classList.remove('copied');
+                }, 2000);
                 
             } catch (error) {
-                console.error('Fallback download failed:', error);
-                // Last resort - copy to clipboard
-                copyToClipboard(content);
-                alert('Download failed. Content has been copied to clipboard instead.');
+                console.error('Copy failed:', error);
+                copyBtn.textContent = '❌ Copy Failed';
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copy Output';
+                }, 2000);
             }
         }
-
-        function copyToClipboard(text) {
-            try {
-                if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(text);
-                } else {
-                    // Fallback for older browsers
-                    const textArea = document.createElement('textarea');
-                    textArea.value = text;
-                    textArea.style.position = 'fixed';
-                    textArea.style.left = '-999999px';
-                    textArea.style.top = '-999999px';
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                }
-            } catch (error) {
-                console.error('Clipboard copy failed:', error);
-            }
-        }
-
-        function convertData() {
+        
+        // This function is now responsible for handling the download button click
+        function downloadFile() {
             const outputName = document.getElementById('outputName').value.trim();
             if (!outputName) {
                 showStatus('Please enter an output filename.', 'error');
                 return;
             }
 
-            const convertBtn = document.getElementById('convertBtn');
-            const originalText = convertBtn.textContent;
-            convertBtn.textContent = 'Processing...';
-            convertBtn.classList.add('processing');
-            convertBtn.disabled = true;
-
-            if (currentMethod === 'file') {
-                convertFile(outputName, convertBtn, originalText);
-            } else {
-                convertTextData(outputName, convertBtn, originalText);
-            }
-        }
-
-        function convertTextData(outputName, convertBtn, originalText) {
-            const rawText = document.getElementById('rawTextInput').value;
-            
-            if (!rawText.trim()) {
-                resetButton(convertBtn, originalText);
-                showStatus('Please paste some data to convert.', 'error');
+            if (!convertedContent) {
+                 showStatus('There is no content to download.', 'error');
                 return;
             }
 
-            // Process the data
-            const outputLines = processData(rawText);
-
-            resetButton(convertBtn, originalText);
-
-            if (outputLines.length > 0) {
-                convertedContent = outputLines.join('\n');
-                const message = `Conversion successful! Found ${outputLines.length} valid lines.`;
-                showStatus(message, 'success');
-                
-                // Remove any existing download button
-                const existingBtn = document.querySelector('.download-btn');
-                if (existingBtn) {
-                    existingBtn.remove();
-                }
-                
-                const downloadBtn = createDownloadLink(convertedContent, outputName);
-                document.getElementById('status').appendChild(document.createElement('br'));
-                document.getElementById('status').appendChild(downloadBtn);
-            } else {
-                showStatus('No valid lines found. Please check the format (data should be separated by | pipe character).', 'error');
+            // Create a Blob and download link
+            try {
+                const blob = new Blob([convertedContent], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = outputName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showStatus('File downloaded successfully!', 'success');
+            } catch (error) {
+                console.error('Download creation failed:', error);
+                showStatus('Download failed. Please try copying the preview text instead.', 'error');
             }
         }
 
-        function convertFile(outputName, convertBtn, originalText) {
+        // Functions for live preview
+        function updatePreviewFromText() {
+            const rawText = document.getElementById('rawTextInput').value;
+            const outputLines = processData(rawText);
+
+            if (outputLines.length > 0) {
+                convertedContent = outputLines.join('\n');
+                showOutput(convertedContent, outputLines.length);
+            } else {
+                convertedContent = null;
+                document.getElementById('outputSection').style.display = 'none';
+            }
+            updateDownloadButton();
+        }
+
+        function updatePreviewFromFile() {
             if (!selectedFile) {
-                resetButton(convertBtn, originalText);
-                showStatus('Please select a file first.', 'error');
+                convertedContent = null;
+                document.getElementById('outputSection').style.display = 'none';
+                updateDownloadButton();
                 return;
             }
 
@@ -557,47 +618,26 @@
                 const content = e.target.result;
                 const outputLines = processData(content);
 
-                resetButton(convertBtn, originalText);
-
                 if (outputLines.length > 0) {
                     convertedContent = outputLines.join('\n');
-                    const message = `Conversion successful! Found ${outputLines.length} valid lines.`;
-                    showStatus(message, 'success');
-                    
-                    // Remove any existing download button
-                    const existingBtn = document.querySelector('.download-btn');
-                    if (existingBtn) {
-                        existingBtn.remove();
-                    }
-                    
-                    const downloadBtn = createDownloadLink(convertedContent, outputName);
-                    document.getElementById('status').appendChild(document.createElement('br'));
-                    document.getElementById('status').appendChild(downloadBtn);
+                    showOutput(convertedContent, outputLines.length);
                 } else {
+                    convertedContent = null;
+                    document.getElementById('outputSection').style.display = 'none';
                     showStatus('No valid lines found in the file. Please check the format.', 'error');
                 }
+                updateDownloadButton();
             };
 
             reader.onerror = function() {
-                resetButton(convertBtn, originalText);
+                convertedContent = null;
+                document.getElementById('outputSection').style.display = 'none';
+                updateDownloadButton();
                 showStatus('Error reading the file. Please try again.', 'error');
             };
 
             reader.readAsText(selectedFile, 'utf-8');
         }
-
-        function resetButton(convertBtn, originalText) {
-            convertBtn.textContent = originalText;
-            convertBtn.classList.remove('processing');
-            updateConvertButton(); // This will properly set the disabled state
-        }
-
-        // Allow enter key to trigger conversion in output filename field
-        document.getElementById('outputName').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !document.getElementById('convertBtn').disabled) {
-                convertData();
-            }
-        });
 
         // Initialize the interface
         switchToFileMethod();
