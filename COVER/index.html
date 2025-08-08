@@ -6,6 +6,8 @@
     <title>CSE-2322 Lab Assignment-04</title>
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2pdf.js library for generating PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         /* Custom font and basic body styling */
         body {
@@ -17,96 +19,163 @@
             max-width: 800px;
         }
 
-        /* Responsive styling for the images to maintain aspect ratio and fill container */
-        .full-width-img {
+        /* Styling for the main content block with the new border */
+        .content-block {
+            background-color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 1rem;
+            border: 2px solid #e5e7eb;
+            padding: 2rem;
+        }
+
+        /* Styling for the large combined image */
+        .combined-image {
             width: 100%;
             height: auto;
+            object-fit: contain;
+        }
+
+        /* Styling for editable input fields */
+        .editable-field {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            background-color: #f9fafb;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        .editable-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #ffffff;
+        }
+        /* Style for a placeholder text in input fields for clarity */
+        .editable-field::placeholder {
+            color: #9ca3af;
+            font-weight: normal;
         }
     </style>
 </head>
 <body class="p-6 md:p-12 min-h-screen flex items-center justify-center">
 
-    <div class="container mx-auto bg-white shadow-2xl rounded-2xl p-8 md:p-12 transform transition-all duration-300 hover:scale-105">
-        <!-- Top Image - IIUC Logo with text -->
-        <!-- The image source has been updated to match the 'image1.png' file in your GitHub. -->
-        <div class="mb-8">
-            <img src="./image1.png" alt="IIUC Logo with text" class="full-width-img rounded-lg shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/701x100/A0A0A0/ffffff?text=IIUC+Logo';">
+    <div class="container mx-auto content-block" id="content-to-pdf">
+        <!-- Download Button -->
+        <div class="flex justify-end mb-4" id="download-button-container">
+            <button id="download-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-200">
+                Download as PDF
+            </button>
         </div>
-
-        <!-- Assignment Title Section -->
-        <header class="text-center mb-10">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 tracking-wide">ASSIGNMENT</h1>
-        </header>
         
-        <!-- Second Image - IIUC Emblem -->
-        <!-- The image source has been updated to match the 'image2.png' file in your GitHub. -->
+        <!-- The combined image uploaded by the user -->
         <div class="mb-8">
-            <img src="./image2.png" alt="IIUC Emblem" class="full-width-img rounded-lg shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/701x564/A0A0A0/ffffff?text=IIUC+Emblem';">
+            <img src="./C241017_page-0001.jpg" alt="Combined Assignment Cover Page" class="combined-image rounded-lg shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/800x1200/A0A0A0/ffffff?text=Combined+Image+Not+Found';">
         </div>
 
-        <!-- Assignment and Submission Details Section -->
-        <div class="space-y-6 text-gray-700 mb-8">
-            <div class="bg-gray-100 p-6 rounded-xl shadow-inner grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Course Information -->
-                <div class="space-y-2">
-                    <p class="text-sm font-medium uppercase text-gray-500">Course Details</p>
-                    <p class="font-semibold text-lg"><span class="font-normal text-gray-600">Course Code:</span> CSE-2322</p>
-                    <p class="font-semibold text-lg"><span class="font-normal text-gray-600">Course Title:</span> Data Structures Lab</p>
-                    <p class="font-semibold text-lg"><span class="font-normal text-gray-600">Assignment No:</span> 04</p>
-                    <p class="font-semibold text-lg"><span class="font-normal text-gray-600">Assignment Name:</span> Lab Assignment-04</p>
+        <!-- Course, Submission, and Student Information Section -->
+        <div class="bg-gray-100 p-6 rounded-xl shadow-inner my-8">
+            
+            <!-- Course and Submission Information -->
+            <div class="space-y-4 text-gray-800 mb-8">
+                <!-- Course Details -->
+                <div class="space-y-1">
+                    <p class="text-sm font-bold uppercase text-gray-500">Course Details</p>
+                    <div class="grid grid-cols-[150px_1fr] gap-x-4 gap-y-2">
+                        <p class="font-bold text-base text-gray-600 self-center">Course Code:</p>
+                        <input type="text" value="CSE-2322" class="editable-field w-full">
+                        <p class="font-bold text-base text-gray-600 self-center">Course Title:</p>
+                        <input type="text" value="Data Structures Lab" class="editable-field w-full">
+                        <p class="font-bold text-base text-gray-600 self-center">Assignment No:</p>
+                        <input type="text" value="04" class="editable-field w-full">
+                        <p class="font-bold text-base text-gray-600 self-center">Assignment Name:</p>
+                        <input type="text" value="Lab Assignment-04" class="editable-field w-full">
+                    </div>
                 </div>
                 
-                <!-- Submission Information -->
-                <div class="space-y-2">
-                    <p class="text-sm font-medium uppercase text-gray-500">Submission Details</p>
-                    <p class="font-semibold text-lg"><span class="font-normal text-gray-600">Submitted To:</span> Prof. Mohammed Shamsul Alam</p>
-                    <p class="font-normal text-base text-gray-600">Professor, Dept. of CSE, IIUC.</p>
-                </div>
-            </div>
-
-            <!-- Student Information -->
-            <div class="bg-gray-100 p-6 rounded-xl shadow-inner">
-                <p class="text-sm font-medium uppercase text-gray-500 mb-2">Submitted By</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="col-span-1">
-                        <p class="font-semibold">Name:</p>
-                        <p>Iftaher Hossen</p>
-                    </div>
-                    <div class="col-span-1">
-                        <p class="font-semibold">ID:</p>
-                        <p>C241017</p>
-                    </div>
-                    <div class="col-span-1">
-                        <p class="font-semibold">Email:</p>
-                        <p>Iftahersayem205@gmail.com</p>
-                    </div>
-                    <div class="col-span-1">
-                        <p class="font-semibold">Semester:</p>
-                        <p>3rd</p>
-                    </div>
-                    <div class="col-span-1">
-                        <p class="font-semibold">Section:</p>
-                        <p>3AM</p>
-                    </div>
-                    <div class="col-span-1">
-                        <p class="font-semibold">Department:</p>
-                        <p>CSE</p>
-                    </div>
-                    <div class="col-span-1">
-                        <p class="font-semibold">Submission Date:</p>
-                        <p>11 July 2025</p>
+                <!-- Submitted To Information -->
+                <div class="space-y-1 mt-4">
+                    <p class="text-sm font-bold uppercase text-gray-500">Submission Details</p>
+                    <div class="grid grid-cols-[150px_1fr] gap-x-4 gap-y-2">
+                        <p class="font-bold text-base text-gray-600 self-center">Submitted To:</p>
+                        <div>
+                            <input type="text" value="Prof. Mohammed Shamsul Alam" class="editable-field w-full mb-1">
+                            <p class="font-bold text-sm text-gray-600">Professor, Dept. of CSE, IIUC.</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Third Image - IIUC Campus photo -->
-        <!-- The image source has been updated to match the 'image3.jpg' file in your GitHub. -->
-        <div>
-            <img src="./image3.jpg" alt="IIUC Campus" class="full-width-img rounded-lg shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/701x300/A0A0A0/ffffff?text=IIUC+Campus';">
+            <!-- Student Information Section -->
+            <div class="mt-8">
+                <p class="text-sm font-bold uppercase text-gray-500 mb-2">Submitted By</p>
+                <div class="grid grid-cols-[150px_1fr] gap-x-4 gap-y-2">
+                    <p class="font-bold text-base text-gray-600 self-center">Name:</p>
+                    <input type="text" value="Iftaher Hossen" class="editable-field w-full">
+                    <p class="font-bold text-base text-gray-600 self-center">ID:</p>
+                    <input type="text" value="C241017" class="editable-field w-full">
+                    <p class="font-bold text-base text-gray-600 self-center">Email:</p>
+                    <input type="text" value="ifatefdf@gmail.com" class="editable-field w-full">
+                    <p class="font-bold text-base text-gray-600 self-center">Semester:</p>
+                    <input type="text" value="3rd" class="editable-field w-full">
+                    <p class="font-bold text-base text-gray-600 self-center">Section:</p>
+                    <input type="text" value="3AM" class="editable-field w-full">
+                    <p class="font-bold text-base text-gray-600 self-center">Department:</p>
+                    <input type="text" value="CSE" class="editable-field w-full">
+                    <p class="font-bold text-base text-gray-600 self-center">Submission Date:</p>
+                    <input type="text" value="11 July 2025" class="editable-field w-full">
+                </div>
+            </div>
         </div>
-
     </div>
 
+    <script>
+        document.getElementById('download-btn').addEventListener('click', () => {
+            const element = document.getElementById('content-to-pdf');
+            const button = document.getElementById('download-btn');
+            const buttonContainer = document.getElementById('download-button-container');
+
+            // Temporarily hide the button during PDF generation
+            buttonContainer.style.display = 'none';
+
+            // Add a loading message to the button
+            button.innerText = 'Generating PDF...';
+            button.disabled = true;
+
+            // Generate the PDF
+            html2pdf()
+                .from(element)
+                .set({
+                    margin: 10,
+                    filename: 'assignment_cover_page.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                })
+                .save()
+                .then(() => {
+                    // Re-enable the button and restore text after generation
+                    button.innerText = 'Download as PDF';
+                    button.disabled = false;
+                    buttonContainer.style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('PDF generation failed:', error);
+                    // Use a custom alert/message box instead of the native `alert()`
+                    const modal = document.createElement('div');
+                    modal.innerHTML = `
+                        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:9999;">
+                            <div style="background-color:white;padding:20px;border-radius:10px;text-align:center;">
+                                <p>Failed to generate PDF. Please try again.</p>
+                                <button onclick="this.parentNode.parentNode.remove()" style="margin-top:10px;padding:8px 16px;background-color:#3b82f6;color:white;border:none;border-radius:5px;cursor:pointer;">OK</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+
+                    button.innerText = 'Download as PDF';
+                    button.disabled = false;
+                    buttonContainer.style.display = 'flex';
+                });
+        });
+    </script>
 </body>
 </html>
