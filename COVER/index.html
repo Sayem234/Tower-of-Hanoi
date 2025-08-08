@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSE-2322 Lab Assignment-04</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font and basic body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        /* Responsive styling for the images to maintain aspect ratio and fill container */
+        .full-width-img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12 min-h-screen flex items-center justify-center">
+
+    <div class="container mx-auto bg-white shadow-2xl rounded-2xl p-8 md:p-12 transform transition-all duration-300 hover:scale-105">
+        <!-- Top Image - IIUC Logo with text -->
+        <div class="mb-8">
+            <img src="./image1.jpg" alt="IIUC Logo with text" class="full-width-img rounded-lg shadow-md">
+        </div>
+
+        <!-- Assignment Title Section -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 tracking-wide">ASSIGNMENT</h1>
+        </header>
+        
+        <!-- Second Image - IIUC Emblem -->
+        <div class="mb-8">
+            <img src="./image2.png" alt="IIUC Emblem" class="full-width-img rounded-lg shadow-md">
+        </div>
+
+        <!-- Assignment and Submission Details Section -->
+        <div class="space-y-6 text-gray-700 mb-8">
+            <div class="bg-gray-100 p-6 rounded-xl shadow-inner grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Course Information -->
+                <div class="space-y-2">
+                    <p class="text-sm font-medium uppercase text-gray-500">Course Details</p>
+                    <p class="font-semibold text-lg"><span class="font-normal text-gray-600">Course Code:</span> CSE-2322</p>
+                    <p class="font-semibold text-lg"><span class="font-normal text-gray-600">Course Title:</span> Data Structures Lab</p>
+                    <p class="font-semibold text-lg"><span class="font-normal text-gray-600">Assignment No:</span> 04</p>
+                    <p class="font-semibold text-lg"><span class="font-normal text-gray-600">Assignment Name:</span> Lab Assignment-04</p>
+                </div>
+                
+                <!-- Submission Information -->
+                <div class="space-y-2">
+                    <p class="text-sm font-medium uppercase text-gray-500">Submission Details</p>
+                    <p class="font-semibold text-lg"><span class="font-normal text-gray-600">Submitted To:</span> Prof. Mohammed Shamsul Alam</p>
+                    <p class="font-normal text-base text-gray-600">Professor, Dept. of CSE, IIUC.</p>
+                </div>
+            </div>
+
+            <!-- Student Information -->
+            <div class="bg-gray-100 p-6 rounded-xl shadow-inner">
+                <p class="text-sm font-medium uppercase text-gray-500 mb-2">Submitted By</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="col-span-1">
+                        <p class="font-semibold">Name:</p>
+                        <p>Iftaher Hossen</p>
+                    </div>
+                    <div class="col-span-1">
+                        <p class="font-semibold">ID:</p>
+                        <p>C241017</p>
+                    </div>
+                    <div class="col-span-1">
+                        <p class="font-semibold">Email:</p>
+                        <p>Iftahersayem205@gmail.com</p>
+                    </div>
+                    <div class="col-span-1">
+                        <p class="font-semibold">Semester:</p>
+                        <p>3rd</p>
+                    </div>
+                    <div class="col-span-1">
+                        <p class="font-semibold">Section:</p>
+                        <p>3AM</p>
+                    </div>
+                    <div class="col-span-1">
+                        <p class="font-semibold">Department:</p>
+                        <p>CSE</p>
+                    </div>
+                    <div class="col-span-1">
+                        <p class="font-semibold">Submission Date:</p>
+                        <p>11 July 2025</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Third Image - IIUC Campus photo -->
+        <div>
+            <img src="./image3.png" alt="IIUC Campus" class="full-width-img rounded-lg shadow-md">
+        </div>
+
+    </div>
+
+</body>
+</html>
